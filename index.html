@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RecallRocket — Spaced Repetition & Campus Leaderboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <span class="logo-icon">🚀</span>
+      <h1>RecallRocket</h1>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-view="decks-view">Decks</button>
+      <button class="tab-btn" data-view="review-view">
+        Daily Review <span id="due-badge" class="badge">0</span>
+      </button>
+      <button class="tab-btn" data-view="leaderboard-view">Leaderboard</button>
+    </nav>
+
+    <div class="nav-actions">
+      <div class="streak-pill" title="Daily Study Streak">
+        <span class="flame-icon">🔥</span>
+        <span id="streak-count">0</span> Day Streak
+      </div>
+      <button id="theme-toggle" class="icon-btn" title="Toggle Dark Mode">🌓</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- VIEW 1: DECKS & CARD MANAGEMENT -->
+    <section id="decks-view" class="view active">
+      <div class="section-header">
+        <div>
+          <h2>Your Study Decks</h2>
+          <p class="subtitle">Master concepts with SuperMemo-2 adaptive intervals.</p>
+        </div>
+        <div class="header-buttons">
+          <button id="open-csv-modal" class="btn btn-secondary">Import CSV</button>
+          <button id="open-deck-modal" class="btn btn-secondary">+ New Deck</button>
+          <button id="open-card-modal" class="btn btn-primary">+ Add Card</button>
+        </div>
+      </div>
+
+      <div id="decks-grid" class="decks-grid">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- VIEW 2: DAILY REVIEW & 3D FLASHCARD -->
+    <section id="review-view" class="view">
+      <div class="review-header">
+        <div class="review-meta">
+          <h2 id="active-deck-title">Daily Due Queue</h2>
+          <span id="review-progress-text">0 cards remaining</span>
+        </div>
+        <div class="review-controls">
+          <button id="tts-btn" class="btn btn-secondary" title="Read Aloud">🔊 Listen</button>
+          <button id="review-all-due-btn" class="btn btn-secondary">All Due Cards</button>
+        </div>
+      </div>
+
+      <div class="progress-bar-container">
+        <div id="review-progress-bar" class="progress-bar-fill"></div>
+      </div>
+
+      <!-- Flashcard Stage -->
+      <div id="flashcard-stage" class="flashcard-stage">
+        <div id="flashcard" class="flashcard" tabindex="0">
+          <div class="card-face card-front">
+            <span class="card-tag" id="card-deck-tag">Algorithms</span>
+            <p class="card-label">QUESTION</p>
+            <div id="card-question" class="card-content">Loading...</div>
+            <span class="card-hint">Click card or press <kbd>Space</kbd> to flip</span>
+          </div>
+
+          <div class="card-face card-back">
+            <span class="card-tag" id="card-stats-tag">EF: 2.50 | Interval: 0d</span>
+            <p class="card-label">ANSWER</p>
+            <div id="card-answer" class="card-content">Loading...</div>
+            <span class="card-hint">Rate your recall quality below (0–5)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SM-2 Rating Controls (0-5) -->
+      <div id="rating-panel" class="rating-panel hidden">
+        <p class="rating-prompt">How well did you recall this?</p>
+        <div class="rating-buttons">
+          <button class="rate-btn rate-fail" data-grade="0">
+            <strong>0</strong><span>Blackout</span><small id="next-0">1d</small>
+          </button>
+          <button class="rate-btn rate-fail" data-grade="1">
+            <strong>1</strong><span>Wrong</span><small id="next-1">1d</small>
+          </button>
+          <button class="rate-btn rate-hard" data-grade="2">
+            <strong>2</strong><span>Hard</span><small id="next-2">1d</small>
+          </button>
+          <button class="rate-btn rate-good" data-grade="3">
+            <strong>3</strong><span>Good</span><small id="next-3">1d</small>
+          </button>
+          <button class="rate-btn rate-good" data-grade="4">
+            <strong>4</strong><span>Easy</span><small id="next-4">1d</small>
+          </button>
+          <button class="rate-btn rate-perfect" data-grade="5">
+            <strong>5</strong><span>Perfect</span><small id="next-5">1d</small>
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty / Completion State -->
+      <div id="review-empty-state" class="empty-state hidden">
+        <div class="empty-icon">🎉</div>
+        <h3>All Caught Up!</h3>
+        <p>You've completed all due reviews for now. Your streak and retention points have been updated.</p>
+        <button class="btn btn-primary" id="back-to-decks-btn">Back to Decks</button>
+      </div>
+    </section>
+
+    <!-- VIEW 3: CAMPUS COHORT LEADERBOARD -->
+    <section id="leaderboard-view" class="view">
+      <div class="section-header">
+        <div>
+          <h2>Campus Cohort Leaderboard</h2>
+          <p class="subtitle">Ranked by Memory Retention Points, Streak Length, and Cards Reviewed.</p>
+        </div>
+        <div class="user-stats-summary">
+          <span>Your Points: <strong id="user-points-display">0</strong></span>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Student</th>
+              <th>Streak</th>
+              <th>Cards Reviewed</th>
+              <th>Retention Points</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body">
+            <!-- Populated dynamically via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: CREATE DECK -->
+  <div id="deck-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Create New Deck</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="deck-form">
+        <label>Deck Title</label>
+        <input type="text" id="deck-title-input" placeholder="e.g., Operating Systems" required />
+        <label>Description</label>
+        <input type="text" id="deck-desc-input" placeholder="e.g., Threads, Deadlocks, Virtual Memory" required />
+        <button type="submit" class="btn btn-primary full-width">Create Deck</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD FLASHCARD WITH LIVE PREVIEW -->
+  <div id="card-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add New Flashcard</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="card-form">
+        <label>Select Deck</label>
+        <select id="card-deck-select" required></select>
+
+        <label>Question (Front)</label>
+        <textarea id="card-question-input" rows="2" placeholder="What is the time complexity of QuickSort?" required></textarea>
+
+        <label>Answer (Back)</label>
+        <textarea id="card-answer-input" rows="3" placeholder="Average: O(n log n), Worst: O(n^2)" required></textarea>
+
+        <div class="live-preview-box">
+          <small>LIVE PREVIEW</small>
+          <p><strong>Q:</strong> <span id="preview-q">...</span></p>
+          <p><strong>A:</strong> <span id="preview-a">...</span></p>
+        </div>
+
+        <button type="submit" class="btn btn-primary full-width">Save Flashcard</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CSV IMPORT -->
+  <div id="csv-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Import Cards via CSV</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="csv-form">
+        <label>Target Deck</label>
+        <select id="csv-deck-select" required></select>
+        <label>Paste CSV Lines (Format: <code>Question,Answer</code>)</label>
+        <textarea id="csv-input" rows="5" placeholder="What is HTTP?,Hypertext Transfer Protocol&#10;What is DNS?,Domain Name System" required></textarea>
+        <button type="submit" class="btn btn-primary full-width">Import Cards</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
